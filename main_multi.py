@@ -32,7 +32,7 @@ def worker(input_q, output_q, cap_params, frame_processed):
         if (frame is not None):
             # actual detection
             boxes, scores = detector_utils.detect_objects(
-                frame, detection_graph, sess)
+                cv2.resize(frame, (160, 90)), detection_graph, sess)
             # draw bounding boxes
             detector_utils.draw_box_on_image(
                 cap_params['num_hands_detect'], cap_params["score_thresh"], scores, boxes, cap_params['im_width'], cap_params['im_height'], frame)

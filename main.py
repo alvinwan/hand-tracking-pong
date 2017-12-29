@@ -39,7 +39,7 @@ def main():
         pong.on_key(key)
 
         boxes, scores = detector_utils.detect_objects(
-            frame, detection_graph, sess)
+            cv2.resize(frame, (160, 90)), detection_graph, sess)
 
         if boxes is not None and scores is not None:
             # draw bounding boxes
