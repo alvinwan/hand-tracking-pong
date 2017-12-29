@@ -143,7 +143,8 @@ class Pong:
         paddle['target'] = None
 
     def update_paddle_for_target(self, paddle):
-        if abs(paddle['target'] - paddle['cy']) < paddle['dy']:
+        if abs(paddle['target'] - paddle['cy']) < \
+                max(paddle['dy'], paddle['half_paddle_height']):
             paddle['dy'] = 0
         elif paddle['target'] > paddle['cy']:
             paddle['dy'] = paddle['speed']
