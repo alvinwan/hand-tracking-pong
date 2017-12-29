@@ -1,4 +1,7 @@
-"""Manager for the Pong game."""
+"""Manager for the Pong game.
+
+No way to control player 2 just yet.
+"""
 
 import cv2
 import numpy as np
@@ -16,14 +19,16 @@ class Pong:
             default_half_paddle_height: int=20,
             default_paddle_lives: int=3,
             default_paddle_speed: int=2,
+            default_ball_dx: int=3,
+            default_ball_dy: int=2,
             enable_computer_player: bool=True):
         self.ended = False
         self.ball = {
             'cx': w // 2,
             'cy': h // 2,
-            'dx': 3,
-            'dy': 2,
-            'r': 3
+            'dx': default_ball_dx,
+            'dy': default_ball_dy,
+            'r': 5
         }
         self.paddle1 = {
             'no': 1,
@@ -51,10 +56,13 @@ class Pong:
 
     def update(self):
         """Update all positions and velocities."""
+
+        # Check if ball needs to bounce vertically
         by = self.ball['cy']
         if by <= self.padding or by >= self.h - self.padding:
             self.ball['dy'] *= -1
 
+        # Check if ball needs to bounce off of paddle. Updates lives accordingly
         bx = self.ball['cx']
         if bx <= self.padding + self.paddle1['half_paddle_width']:
             if not self.hit(self.ball, self.paddle1):
@@ -70,6 +78,7 @@ class Pong:
                 return
             self.ball['dx'] *= -1
 
+        # Move balls and paddles
         self.ball['cx'] += self.ball['dx']
         self.ball['cy'] += self.ball['dy']
 
@@ -90,7 +99,7 @@ class Pong:
         """Assumes the paddle is within x of the paddle."""
         top = paddle['cy'] + paddle['half_paddle_height']
         bottom = paddle['cy'] - paddle['half_paddle_height']
-        return bottom <= ball['cy'] <= top
+        return bottom <= ball['cy'] - ball['r'] or ball['cy'] + ball['r'] <= top
 
     def remove_player_life(self, paddle):
         """Decrement player life and check for end of game."""
@@ -112,9 +121,17 @@ class Pong:
     def draw(self, frame):
         """In-place modification of frame"""
         assert frame.shape[:2] == (self.h, self.w), 'Frame shape mismatch'
+        self.draw_arena(frame)
         self.draw_paddle(frame, self.paddle1)
         self.draw_paddle(frame, self.paddle2)
         self.draw_ball(frame, self.ball)
+
+    def draw_arena(self, frame):
+        """In-place draw the arena"""
+        p1 = (self.padding - self.ball['r'], self.padding + self.ball['r'])
+        p2 = (self.w - self.padding - self.paddle1['half_paddle_width'],
+              self.h - self.padding + self.paddle2['half_paddle_width'])
+        cv2.rectangle(frame, p1, p2, (255, 255, 255), 2)
 
     def draw_paddle(self, frame, paddle):
         """In-place draw the paddle onto the frame"""
