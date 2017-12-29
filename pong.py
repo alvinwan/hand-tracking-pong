@@ -53,25 +53,29 @@ class Pong:
         }
         self.h = h
         self.w = w
+        self.ymax = self.h - self.padding
+        self.ymin = self.padding
+        self.xmax = self.w - self.padding
+        self.xmin = self.padding
 
     def update(self):
         """Update all positions and velocities."""
 
         # Check if ball needs to bounce vertically
         by = self.ball['cy']
-        if by <= self.padding or by >= self.h - self.padding:
+        if by <= self.ymin or by >= self.ymax:
             self.ball['dy'] *= -1
 
         # Check if ball needs to bounce off of paddle. Updates lives accordingly
         bx = self.ball['cx']
-        if bx <= self.padding + self.paddle1['half_paddle_width']:
+        if bx <= self.xmin + self.paddle1['half_paddle_width']:
             if not self.hit(self.ball, self.paddle1):
                 self.remove_player_life(self.paddle1)
                 self.reset()
                 return
             self.ball['dx'] *= -1
 
-        if bx >= self.w - self.padding - self.paddle2['half_paddle_width']:
+        if bx >= self.xmax - self.paddle2['half_paddle_width']:
             if not self.hit(self.ball, self.paddle2):
                 self.remove_player_life(self.paddle2)
                 self.reset()
@@ -82,24 +86,30 @@ class Pong:
         self.ball['cx'] += self.ball['dx']
         self.ball['cy'] += self.ball['dy']
 
-        self.paddle1['cy'] += self.paddle1['dy']
-        self.paddle2['cy'] += self.paddle2['dy']
-
         # update paddle2 if computer enabled
         if self.paddle2['computer']:
-            if self.ball['cy'] > self.paddle2['cy']:
-                self.paddle2['dy'] = self.paddle2['speed']
-            elif self.ball['cy'] < self.paddle2['cy']:
-                self.paddle2['dy'] = -self.paddle2['speed']
-            else:
-                self.paddle2['dy'] = 0
+            self.set_target_for_player(self.paddle2, self.ball['cy'])
+
+        # move towards targets
+        if self.paddle1.get('target', None):
+            self.update_paddle_for_target(self.paddle1)
+
+        if self.paddle2.get('target', None):
+            self.update_paddle_for_target(self.paddle2)
+
+        self.paddle1['cy'] = self.yfix(self.paddle1['cy'] + self.paddle1['dy'])
+        self.paddle2['cy'] = self.yfix(self.paddle2['cy'] + self.paddle2['dy'])
+
         return self.ended
+
+    def yfix(self, y):
+        return max(self.ymin, min(y, self.ymax))
 
     def hit(self, ball, paddle):
         """Assumes the paddle is within x of the paddle."""
         top = paddle['cy'] + paddle['half_paddle_height']
         bottom = paddle['cy'] - paddle['half_paddle_height']
-        return bottom <= ball['cy'] - ball['r'] or ball['cy'] + ball['r'] <= top
+        return bottom <= ball['cy'] - ball['r'] and ball['cy'] + ball['r'] <= top
 
     def remove_player_life(self, paddle):
         """Decrement player life and check for end of game."""
@@ -126,10 +136,24 @@ class Pong:
         self.draw_paddle(frame, self.paddle2)
         self.draw_ball(frame, self.ball)
 
+    def set_target_for_player(self, paddle, target):
+        paddle['target'] = target
+
+    def unset_target_for_player(self, paddle):
+        paddle['target'] = None
+
+    def update_paddle_for_target(self, paddle):
+        if abs(paddle['target'] - paddle['cy']) < paddle['dy']:
+            paddle['dy'] = 0
+        elif paddle['target'] > paddle['cy']:
+            paddle['dy'] = paddle['speed']
+        elif paddle['target'] < paddle['cy']:
+            paddle['dy'] = -paddle['speed']
+
     def draw_arena(self, frame):
         """In-place draw the arena"""
-        p1 = (self.padding - self.ball['r'], self.padding + self.ball['r'])
-        p2 = (self.w - self.padding - self.paddle1['half_paddle_width'],
+        p1 = (self.padding - self.ball['r'], self.padding - self.ball['r'])
+        p2 = (self.w - self.padding + self.paddle1['half_paddle_width'],
               self.h - self.padding + self.paddle2['half_paddle_width'])
         cv2.rectangle(frame, p1, p2, (255, 255, 255), 2)
 
