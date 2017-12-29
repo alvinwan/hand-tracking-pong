@@ -18,8 +18,10 @@ def main():
     cap = cv2.VideoCapture(0)
     detection_graph, sess = detector_utils.load_inference_graph()
     ret, frame = cap.read()
-
     height, width, _ = frame.shape
+    frame = cv2.resize(frame, (width // 2, height // 2))
+    height, width, _ = frame.shape
+
     pong = Pong(
         h=height,
         w=width,
@@ -32,6 +34,7 @@ def main():
     while True:
         i += 1
         ret, frame = cap.read()
+        frame = cv2.resize(frame, (width, height))
         frame = cv2.flip(frame, 1)  # flip across vertical axis
 
         # wait for keys
@@ -39,8 +42,7 @@ def main():
         pong.on_key(key)
 
         boxes, scores = detector_utils.detect_objects(
-            cv2.resize(frame, (160, 90)), detection_graph, sess)
-
+            cv2.resize(frame, (320, 180)), detection_graph, sess)
         if boxes is not None and scores is not None:
             # draw bounding boxes
             detector_utils.draw_box_on_image(

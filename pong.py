@@ -9,7 +9,7 @@ import numpy as np
 
 class Pong:
 
-    padding = 100
+    padding = 50
 
     def __init__(
             self,

@@ -17,9 +17,7 @@ def update_pong_with_boxes_scores(boxes, scores, pong, height):
         top, bottom = ftop * height, fbottom * height
         target = (top + bottom) / 2.
         pong.set_target_for_player(pong.paddle1, target)
-        print('setting target', target)
     else:
-        print('unsetting target')
         pong.unset_target_for_player(pong.paddle1)
 
 
@@ -32,7 +30,7 @@ def worker(input_q, output_q, cap_params, frame_processed):
         if (frame is not None):
             # actual detection
             boxes, scores = detector_utils.detect_objects(
-                cv2.resize(frame, (160, 90)), detection_graph, sess)
+                cv2.resize(frame, (320, 180)), detection_graph, sess)
             # draw bounding boxes
             detector_utils.draw_box_on_image(
                 cap_params['num_hands_detect'], cap_params["score_thresh"], scores, boxes, cap_params['im_width'], cap_params['im_height'], frame)
@@ -50,6 +48,8 @@ def main():
     cap = cv2.VideoCapture(0)
     ret, frame = cap.read()
 
+    height, width, _ = frame.shape
+    frame = cv2.resize(frame, (width // 2, height // 2))
     height, width, _ = frame.shape
     pong = Pong(
         h=height,
@@ -72,6 +72,7 @@ def main():
     while True:
         i += 1
         ret, frame = cap.read()
+        frame = cv2.resize(frame, (width, height))
         frame = cv2.flip(frame, 1)  # flip across vertical axis
 
         # wait for keys
