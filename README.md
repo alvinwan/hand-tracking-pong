@@ -7,7 +7,7 @@ The original hand tracker utilities and model are taken from Victor Dibia's [Han
 
 ## Installation
 
-1. [Setup a Python virtual environment](https://www.digitalocean.com/community/tutorials/common-python-tools-using-virtualenv-installing-with-pip-and-managing-packages#a-thorough-virtualenv-how-to) with Python 3.6.
+1. [Setup a Python virtual environment](https://www.digitalocean.com/community/tutorials/common-python-tools-using-virtualenv-installing-with-pip-and-managing-packages#a-thorough-virtualenv-how-to) with Python 3.5.
 
 2. Install all Python dependencies.
 
